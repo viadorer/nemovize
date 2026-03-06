@@ -22,7 +22,7 @@ INSERT INTO brokers (
   first_name,
   last_name,
   email,
-  phone,
+  phone, 
   bio,
   is_verified,
   is_active,
