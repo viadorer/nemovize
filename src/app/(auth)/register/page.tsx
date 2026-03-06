@@ -81,14 +81,18 @@ export default function RegisterPage() {
             </p>
           )}
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Registruji..." : "Zaregistrovat se"}
+          </Button>
+
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             Máte již účet?{" "}
             <Link href="/login" className="text-accent hover:underline">
               Přihlašte se
             </Link>
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

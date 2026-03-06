@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { MapPin, Maximize, BedDouble } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -25,26 +27,25 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, href }: PropertyCardProps) {
-  const primaryImage = property.property_images?.find((img) => img.is_primary)
-    ?? property.property_images?.[0]
+  const images = (property as any).images ?? property.property_images ?? []
+  const primaryImage = images.find((img: any) => img.is_primary) ?? images[0]
 
   const link = href ?? `/dashboard/properties/${property.id}`
+
+  const placeholderImage = `https://placehold.co/800x500/1a1a2e/eaeaea?text=${encodeURIComponent(property.property_type ?? 'Nemovitost')}`
 
   return (
     <Link href={link}>
       <Card className="overflow-hidden hover:shadow-xl hover:shadow-black/[0.05] transition-all duration-300 group">
         <div className="relative aspect-[16/10] bg-muted overflow-hidden">
-          {primaryImage ? (
-            <img
-              src={primaryImage.url}
-              alt={property.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              <MapPin className="w-8 h-8" />
-            </div>
-          )}
+          <img
+            src={primaryImage?.url?.startsWith('/') ? placeholderImage : (primaryImage?.url ?? placeholderImage)}
+            alt={property.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = placeholderImage
+            }}
+          />
           <div className="absolute top-3 left-3">
             <Badge variant={statusVariant[property.status]}>
               {statusLabel[property.status]}

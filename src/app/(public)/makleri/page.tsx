@@ -7,11 +7,24 @@ import { createClient } from "@/lib/supabase/server"
 export default async function BrokersPage() {
   const supabase = await createClient()
   
-  // Fetch all active brokers with stats
-  const { data: brokers } = await supabase
-    .from('broker_stats_complete')
-    .select('*')
-    .order('avg_rating', { ascending: false, nullsFirst: false })
+  // Fetch all active brokers with agency info
+  const { data: brokers, error } = await supabase
+    .from('brokers')
+    .select(`
+      *,
+      agency:real_estate_agencies(
+        id,
+        name,
+        logo_url
+      )
+    `)
+    .eq('is_active', true)
+    .order('is_featured', { ascending: false })
+    .order('years_of_experience', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching brokers:', error)
+  }
 
   return (
     <div className="min-h-screen">
@@ -70,7 +83,7 @@ export default async function BrokersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {brokers?.map((broker) => (
-              <Link key={broker.broker_id} href={`/makleri/${broker.broker_id}`}>
+              <Link key={broker.id} href={`/makleri/${broker.id}`}>
                 <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full">
                   {/* Cover Image */}
                   <div className="h-32 bg-gradient-to-br from-[rgba(240,255,240,0.65)] to-[rgba(0,112,243,0.15)] relative">
@@ -87,17 +100,9 @@ export default async function BrokersPage() {
                     {/* Avatar */}
                     <div className="relative -mt-16 mb-4">
                       <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white mx-auto">
-                        {broker.avatar_url ? (
-                          <img 
-                            src={broker.avatar_url} 
-                            alt={broker.full_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[rgba(240,255,240,0.65)] to-[rgba(0,112,243,0.15)] text-2xl font-bold text-[#111111]">
-                            {broker.first_name?.[0]}{broker.last_name?.[0]}
-                          </div>
-                        )}
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[rgba(240,255,240,0.65)] to-[rgba(0,112,243,0.15)] text-2xl font-bold text-[#111111]">
+                          {broker.first_name?.[0]}{broker.last_name?.[0]}
+                        </div>
                       </div>
                     </div>
 
@@ -107,7 +112,7 @@ export default async function BrokersPage() {
                         {broker.title && `${broker.title} `}{broker.full_name}
                       </h3>
                       <p className="text-sm text-[#666666] mb-3">
-                        {broker.agency_name}
+                        {(broker.agency as any)?.name}
                       </p>
 
                       {/* Rating */}
