@@ -26,7 +26,7 @@ export default function LoginPage() {
       <CardContent className="p-8">
         <h2 className="text-xl font-semibold mb-6">Přihlášení</h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
+        <form action={handleSubmit} className="flex flex-col space-y-6">
           <Input
             id="email"
             name="email"
