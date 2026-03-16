@@ -36,6 +36,8 @@ export async function fetchNemovizorProperties(filters: PropertyFilters = {}) {
 
   const { data, error, count } = await query
 
+  console.log("[Nemovizor] Query result — count:", data?.length, "error:", error?.message ?? "none")
+
   if (error) throw new Error(`Nemovizor query failed: ${error.message}`)
 
   return { properties: data as NemovizorProperty[], count }

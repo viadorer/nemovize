@@ -9,6 +9,8 @@ export function createNemovizorClient() {
   const url = process.env.NEMOVIZOR_SUPABASE_URL
   const key = process.env.NEMOVIZOR_SUPABASE_ANON_KEY
 
+  console.log("[Nemovizor] ENV check — url:", !!url, "key:", !!key)
+
   if (!url || !key) {
     throw new Error("Missing NEMOVIZOR_SUPABASE_URL or NEMOVIZOR_SUPABASE_ANON_KEY")
   }

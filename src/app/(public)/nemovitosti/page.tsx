@@ -38,7 +38,10 @@ export default async function NemovitostiPage({
     areaMax: searchParams.maxArea ? Number(searchParams.maxArea) : undefined,
     limit: pageSize,
     offset: (page - 1) * pageSize,
-  }).catch(() => ({ properties: [], count: 0 }))
+  }).catch((err) => {
+    console.error("[Nemovizor] Fetch failed:", err.message)
+    return { properties: [], count: 0 }
+  })
 
   const allProperties = adaptNemovizorProperties(nemovizorResult.properties)
   const total = nemovizorResult.count || allProperties.length
