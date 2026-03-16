@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { PropertyCard } from '@/components/properties/property-card'
-import { getProperties } from '@/lib/api/properties'
+import { fetchNemovizorProperties, adaptNemovizorProperties } from '@/lib/nemovizor'
 import { PropertyFilters } from './filters'
 import { PropertyPagination } from './pagination'
 import { PropertySorting } from './sorting'
@@ -24,25 +24,23 @@ export default async function NemovitostiPage({
   searchParams: SearchParams
 }) {
   const page = Number(searchParams.page) || 1
-  const filters = {
-    propertyType: searchParams.propertyType,
-    listingType: searchParams.listingType,
+  const pageSize = 12
+
+  const nemovizorResult = await fetchNemovizorProperties({
+    listing_type: searchParams.listingType,
+    category: searchParams.propertyType,
     city: searchParams.city,
-    minPrice: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
-    maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
-    minArea: searchParams.minArea ? Number(searchParams.minArea) : undefined,
-    maxArea: searchParams.maxArea ? Number(searchParams.maxArea) : undefined,
-    rooms: searchParams.rooms ? Number(searchParams.rooms) : undefined,
-  }
+    priceMin: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
+    priceMax: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
+    areaMin: searchParams.minArea ? Number(searchParams.minArea) : undefined,
+    areaMax: searchParams.maxArea ? Number(searchParams.maxArea) : undefined,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  }).catch(() => ({ properties: [], count: 0 }))
 
-  const sortBy = (searchParams.sortBy as any) || 'newest'
-
-  const { properties, total, totalPages } = await getProperties(
-    filters,
-    sortBy,
-    page,
-    12
-  )
+  const allProperties = adaptNemovizorProperties(nemovizorResult.properties)
+  const total = nemovizorResult.count || allProperties.length
+  const totalPages = Math.ceil(total / pageSize)
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -63,12 +61,14 @@ export default async function NemovitostiPage({
         <main>
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-muted-foreground">
-              Zobrazeno {properties.length} z {total}
+              Zobrazeno {allProperties.length} z {total}
             </p>
-            <PropertySorting />
+            <Suspense fallback={null}>
+              <PropertySorting />
+            </Suspense>
           </div>
 
-          {properties.length === 0 ? (
+          {allProperties.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
                 Žádné nemovitosti nenalezeny
@@ -80,20 +80,24 @@ export default async function NemovitostiPage({
           ) : (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map((property) => (
+                {allProperties.map((property) => (
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    href={`/nemovitosti/${property.id}`}
+                    href={
+                      property.id.startsWith('nv-')
+                        ? `/nemovitosti/${property.id}`
+                        : `/nemovitosti/${property.id}`
+                    }
                   />
                 ))}
               </div>
 
-              {(totalPages ?? 0) > 1 && (
+              {totalPages > 1 && (
                 <div className="mt-8">
                   <PropertyPagination
                     currentPage={page}
-                    totalPages={totalPages ?? 1}
+                    totalPages={totalPages}
                   />
                 </div>
               )}

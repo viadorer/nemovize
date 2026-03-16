@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getPropertyById } from '@/lib/api/properties'
+import { fetchNemovizorProperty, adaptNemovizorProperty } from '@/lib/nemovizor'
 import { PropertyDetailClient } from './PropertyDetailClient'
 
 interface Props {
@@ -8,11 +8,15 @@ interface Props {
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params
-  const { property, error } = await getPropertyById(id)
 
-  if (!property || error) {
+  // Strip "nv-" prefix if present
+  const nemovizorId = id.startsWith('nv-') ? id.slice(3) : id
+
+  try {
+    const nvProperty = await fetchNemovizorProperty(nemovizorId)
+    const adapted = adaptNemovizorProperty(nvProperty)
+    return <PropertyDetailClient property={adapted} />
+  } catch {
     notFound()
   }
-
-  return <PropertyDetailClient property={property} />
 }

@@ -60,23 +60,39 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/register") ||
     request.nextUrl.pathname.startsWith("/forgot-password")
 
-  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/properties") ||
-    request.nextUrl.pathname.startsWith("/clients") ||
-    request.nextUrl.pathname.startsWith("/valuations") ||
-    request.nextUrl.pathname.startsWith("/inquiries") ||
-    request.nextUrl.pathname.startsWith("/messages") ||
-    request.nextUrl.pathname.startsWith("/documents") ||
-    request.nextUrl.pathname.startsWith("/consultants") ||
-    request.nextUrl.pathname.startsWith("/settings") ||
-    request.nextUrl.pathname.startsWith("/analytics")
+  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard")
+  const isAdminPage = request.nextUrl.pathname.startsWith("/admin")
 
+  // Admin routes — require authenticated admin/superadmin
+  if (isAdminPage) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      url.searchParams.set("redirect", "/admin")
+      return NextResponse.redirect(url)
+    }
+
+    const { data: userData } = await supabase
+      .from("users")
+      .select("role, is_active")
+      .eq("id", user.id)
+      .single()
+
+    if (!userData || !userData.is_active || !["admin", "superadmin"].includes(userData.role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Dashboard — require authentication
   if (!user && isDashboardPage) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 
+  // Auth pages — redirect logged-in users away
   if (user && isAuthPage) {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"

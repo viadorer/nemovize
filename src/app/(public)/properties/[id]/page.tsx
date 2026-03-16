@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { MapPin, Maximize, BedDouble, Building, Zap, Phone, Mail } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { fetchNemovizorProperty, adaptNemovizorProperty } from "@/lib/nemovizor"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,14 +16,28 @@ export default async function PublicPropertyDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
 
-  const { data: property } = await supabase
-    .from("properties")
-    .select("*, property_images(*)")
-    .eq("id", id)
-    .eq("status", "active")
-    .single()
+  // Nemovizor properties have IDs prefixed with "nv-"
+  let property: any = null
+
+  if (id.startsWith('nv-')) {
+    const nemovizorId = id.slice(3)
+    try {
+      const nvProperty = await fetchNemovizorProperty(nemovizorId)
+      property = adaptNemovizorProperty(nvProperty)
+    } catch {
+      notFound()
+    }
+  } else {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from("properties")
+      .select("*, property_images(*)")
+      .eq("id", id)
+      .eq("status", "active")
+      .single()
+    property = data
+  }
 
   if (!property) notFound()
 
