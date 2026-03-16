@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Suspense } from 'react'
 import { PropertyCard } from '@/components/properties/property-card'
 import { fetchNemovizorProperties, adaptNemovizorProperties } from '@/lib/nemovizor'
