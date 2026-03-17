@@ -1,14 +1,32 @@
 import { createNemovizorClient } from "./client"
 import type { NemovizorProperty, NemovizorBroker, NemovizorAgency } from "./types"
 
-type PropertyFilters = {
+// Map Czech filter values → Nemovizor DB values
+const categoryMap: Record<string, string> = {
+  byt: "apartment",
+  dům: "house",
+  dum: "house",
+  pozemek: "land",
+  "komerční": "commercial",
+  komercni: "commercial",
+  // pass-through English values
+  apartment: "apartment",
+  house: "house",
+  land: "land",
+  commercial: "commercial",
+  other: "other",
+}
+
+export type PropertyFilters = {
   listing_type?: string
   category?: string
   city?: string
+  rooms?: string
   priceMin?: number
   priceMax?: number
   areaMin?: number
   areaMax?: number
+  sortBy?: string
   limit?: number
   offset?: number
 }
@@ -16,15 +34,40 @@ type PropertyFilters = {
 export async function fetchNemovizorProperties(filters: PropertyFilters = {}) {
   const nemovizor = createNemovizorClient()
 
+  // Sorting
+  let orderColumn = "created_at"
+  let orderAscending = false
+  switch (filters.sortBy) {
+    case "oldest":
+      orderColumn = "created_at"; orderAscending = true; break
+    case "price_asc":
+      orderColumn = "price"; orderAscending = true; break
+    case "price_desc":
+      orderColumn = "price"; orderAscending = false; break
+    case "area_asc":
+      orderColumn = "area"; orderAscending = true; break
+    case "area_desc":
+      orderColumn = "area"; orderAscending = false; break
+    default: // "newest"
+      orderColumn = "created_at"; orderAscending = false; break
+  }
+
   let query = nemovizor
     .from("properties")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("active", true)
-    .order("created_at", { ascending: false })
+    .order(orderColumn, { ascending: orderAscending })
 
   if (filters.listing_type) query = query.eq("listing_type", filters.listing_type)
-  if (filters.category) query = query.eq("category", filters.category)
+
+  // Resolve Czech category names to English DB values
+  if (filters.category) {
+    const resolved = categoryMap[filters.category.toLowerCase()] ?? filters.category
+    query = query.eq("category", resolved)
+  }
+
   if (filters.city) query = query.ilike("city", `%${filters.city}%`)
+  if (filters.rooms) query = query.ilike("rooms_label", `%${filters.rooms}%`)
   if (filters.priceMin) query = query.gte("price", filters.priceMin)
   if (filters.priceMax) query = query.lte("price", filters.priceMax)
   if (filters.areaMin) query = query.gte("area", filters.areaMin)
@@ -36,11 +79,11 @@ export async function fetchNemovizorProperties(filters: PropertyFilters = {}) {
 
   const { data, error, count } = await query
 
-  console.log("[Nemovizor] Query result — count:", data?.length, "error:", error?.message ?? "none")
+  console.log("[Nemovizor] Query result — rows:", data?.length, "total:", count, "error:", error?.message ?? "none")
 
   if (error) throw new Error(`Nemovizor query failed: ${error.message}`)
 
-  return { properties: data as NemovizorProperty[], count }
+  return { properties: data as NemovizorProperty[], count: count ?? data?.length ?? 0 }
 }
 
 export async function fetchNemovizorProperty(slug: string) {

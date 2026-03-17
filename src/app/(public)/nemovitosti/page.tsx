@@ -32,10 +32,12 @@ export default async function NemovitostiPage({
     listing_type: searchParams.listingType,
     category: searchParams.propertyType,
     city: searchParams.city,
+    rooms: searchParams.rooms,
     priceMin: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
     priceMax: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
     areaMin: searchParams.minArea ? Number(searchParams.minArea) : undefined,
     areaMax: searchParams.maxArea ? Number(searchParams.maxArea) : undefined,
+    sortBy: searchParams.sortBy,
     limit: pageSize,
     offset: (page - 1) * pageSize,
   }).catch((err) => {

@@ -8,16 +8,19 @@ import { Card } from '@/components/ui/card'
 
 const propertyTypes = [
   { value: '', label: 'Všechny typy' },
-  { value: 'byt', label: 'Byt' },
-  { value: 'dům', label: 'Dům' },
-  { value: 'pozemek', label: 'Pozemek' },
-  { value: 'komerční', label: 'Komerční' },
+  { value: 'apartment', label: 'Byt' },
+  { value: 'house', label: 'Dům' },
+  { value: 'land', label: 'Pozemek' },
+  { value: 'commercial', label: 'Komerční' },
+  { value: 'other', label: 'Ostatní' },
 ]
 
 const listingTypes = [
   { value: '', label: 'Prodej i pronájem' },
   { value: 'sale', label: 'Prodej' },
   { value: 'rent', label: 'Pronájem' },
+  { value: 'auction', label: 'Dražba' },
+  { value: 'shares', label: 'Podíly' },
 ]
 
 const roomOptions = [
