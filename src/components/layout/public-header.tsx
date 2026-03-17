@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const links = [
-  { href: "/properties", label: "Nemovitosti" },
+  { href: "/nemovitosti", label: "Nemovitosti" },
   { href: "/valuation", label: "Ocenění" },
   { href: "/consultants", label: "Konzultanti" },
   { href: "/about", label: "O nás" },
