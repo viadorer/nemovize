@@ -160,14 +160,14 @@ export function PropertyCard({ property, href }: PropertyCardProps) {
               {activeFeatures.slice(0, 4).map((f) => (
                 <span
                   key={f.key}
-                  className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                  className="inline-flex items-center gap-1 rounded-md bg-black/5 px-2 py-0.5 text-xs font-medium text-black/70"
                 >
                   {f.icon}
                   {f.label}
                 </span>
               ))}
               {activeFeatures.length > 4 && (
-                <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                <span className="inline-flex items-center rounded-md bg-black/5 px-2 py-0.5 text-xs font-medium text-black/70">
                   +{activeFeatures.length - 4}
                 </span>
               )}
