@@ -51,13 +51,6 @@ export default async function NemovitostiPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Nemovitosti</h1>
-        <p className="text-muted-foreground">
-          Nalezeno {total} {total === 1 ? 'nemovitost' : total < 5 ? 'nemovitosti' : 'nemovitostí'}
-        </p>
-      </div>
-
       <div className="grid lg:grid-cols-[280px_1fr] gap-8">
         <aside>
           <Suspense fallback={<div>Načítání filtrů...</div>}>
